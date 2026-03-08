@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+:root {
+  --orchird-black: #0d0d0d;
+  --orchird-green: #21bf48;
+  --orchird-green-dark: #24a645;
+  --orchird-lavender: #bf82d9;
+  --orchird-lilac: #e2bbf2;
+  --orchird-smoke: #f2f2f2;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: linear-gradient(140deg, var(--orchird-smoke), #ffffff 45%, #f4e8fb);
+  color: var(--orchird-black);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.container-x {
+  width: min(1120px, 92%);
+  margin-inline: auto;
+}
+
+.section-pad {
+  padding-block: clamp(2.5rem, 6vw, 5rem);
+}
