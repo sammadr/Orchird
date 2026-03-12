@@ -2,13 +2,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { FaChevronLeft, FaChevronRight, FaExpand, FaTimes } from 'react-icons/fa'
 import { projects } from '../data/projects'
+import { workPageData } from '../data/workPageData'
 
 const Motion = motion
 
-const serviceOrder = ['Corte En Forma', 'Rëzocut', 'Color', 'Secado', 'Barberia', 'Peinados']
-const visiblePerSection = 6
-const cardWidth = 200
-const cardGap = 16
+const { cardGap, cardWidth, serviceOrder, visiblePerSection } = workPageData
 const step = cardWidth + cardGap
 
 function getVisibleItems(items, start, visibleCount) {
@@ -170,7 +168,7 @@ function Work() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
         >
-          Galeria Orchird
+          {workPageData.hero.eyebrow}
         </Motion.p>
         <Motion.h1
           className="mt-4 text-4xl font-black uppercase tracking-tight text-(--orchird-green) md:text-6xl"
@@ -178,7 +176,7 @@ function Work() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.05 }}
         >
-          Nuestro Trabajo
+          {workPageData.hero.title}
         </Motion.h1>
         <Motion.p
           className="mx-auto mt-6 max-w-5xl text-lg leading-8 text-(--orchird-black)/80 md:text-2xl md:leading-[1.55]"
@@ -186,8 +184,7 @@ function Work() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.42, delay: 0.1 }}
         >
-          Galeria organizada por servicio. Cada seccion se desliza automaticamente para mostrar mas resultados.
-          Haz click en cualquier foto para verla en detalle.
+          {workPageData.hero.description}
         </Motion.p>
       </section>
 
