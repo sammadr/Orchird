@@ -9,7 +9,10 @@ import Work from './pages/Work'
 import Store from './pages/Store'
 import Reservations from './pages/Reservations'
 import Contact from './pages/Contact'
-import Login from './pages/Login'
+import LoginPage from './features/auth/pages/LoginPage'
+import RegisterPage from './features/auth/pages/RegisterPage'
+import ForgotPasswordPage from './features/auth/pages/ForgotPasswordPage'
+import ResetPasswordPage from './features/auth/pages/ResetPasswordPage'
 import Billing from './pages/Billing'
 import NotFound from './pages/NotFound'
 
@@ -27,7 +30,10 @@ function App() {
         <Route path="/tienda" element={<Store />} />
         <Route path="/reservas" element={<Reservations />} />
         <Route path="/contacto" element={<Contact />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/registro" element={<RegisterPage />} />
+        <Route path="/recuperar-password" element={<ForgotPasswordPage />} />
+        <Route path="/cambiar-password" element={<ResetPasswordPage />} />
         <Route path="/facturacion" element={<Billing />} />
       </Route>
       <Route path="*" element={<NotFound />} />
