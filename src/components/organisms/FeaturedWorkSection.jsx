@@ -3,16 +3,18 @@ import { motion } from 'framer-motion'
 import SectionTitle from '../atoms/SectionTitle'
 import WorkHighlightCard from '../molecules/WorkHighlightCard'
 
+const MotionDiv = motion.div
+
 function FeaturedWorkSection() {
   return (
     <section className="relative overflow-hidden py-16 md:py-20">
-      <div className="absolute -left-16 top-8 h-52 w-52 rounded-full bg-[var(--orchird-lilac)]/35 blur-3xl" />
-      <div className="absolute -right-14 bottom-6 h-56 w-56 rounded-full bg-[var(--orchird-green)]/18 blur-3xl" />
+      <div className="absolute -left-16 top-8 h-52 w-52 rounded-full bg-(--orchird-lilac)/35 blur-3xl" />
+      <div className="absolute -right-14 bottom-6 h-56 w-56 rounded-full bg-(--orchird-green)/18 blur-3xl" />
 
       <div className="container-x relative z-10">
         <SectionTitle number="02" title="Nuestros trabajos mas" highlight="destacados" />
 
-        <motion.div
+        <MotionDiv
           className="mt-14 grid gap-6 md:grid-cols-3"
           initial="hidden"
           whileInView="show"
@@ -23,7 +25,7 @@ function FeaturedWorkSection() {
           }}
         >
           {projects.slice(0, 6).map((item) => (
-            <motion.div
+            <MotionDiv
               key={item.id}
               variants={{
                 hidden: { opacity: 0, y: 22 },
@@ -31,9 +33,9 @@ function FeaturedWorkSection() {
               }}
             >
               <WorkHighlightCard item={item} />
-            </motion.div>
+            </MotionDiv>
           ))}
-        </motion.div>
+        </MotionDiv>
       </div>
     </section>
   )
