@@ -10,6 +10,22 @@ export const aboutStory = {
     'Comenzamos como un espacio pequeno con una idea clara: ofrecer servicios honestos, sin improvisacion y con enfoque en salud capilar. Hoy seguimos con la misma esencia, sumando formacion continua, protocolos propios y una experiencia premium que cuida cada detalle desde el diagnostico hasta el mantenimiento en casa.',
 }
 
+export const aboutPageContent = {
+  hero: {
+    eyebrow: 'Sobre nosotros',
+    title: 'Equipo con proposito',
+    description: 'Construimos resultados visibles con un metodo humano, profesional y consistente.',
+  },
+  teamTitle: 'Conoce Al Equipo',
+}
+
+export const trustBadges = [
+  { id: 1, iconKey: 'award', label: 'Tecnica profesional' },
+  { id: 2, iconKey: 'heart', label: 'Atencion personalizada' },
+  { id: 3, iconKey: 'leaf', label: 'Salud capilar real' },
+  { id: 4, iconKey: 'users', label: 'Equipo certificado' },
+]
+
 export const aboutHeroImage =
   'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=2000&q=80'
 

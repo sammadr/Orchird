@@ -1,16 +1,23 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { FaAward, FaHeart, FaLeaf, FaUsers, FaInstagram, FaTimes } from 'react-icons/fa'
-import { aboutHeroImage, aboutIntro, aboutStory, teamMembers } from '../data/aboutTeam'
+import {
+  aboutHeroImage,
+  aboutIntro,
+  aboutPageContent,
+  aboutStory,
+  teamMembers,
+  trustBadges,
+} from '../data/aboutTeam'
 
 const Motion = motion
 
-const trustBadges = [
-  { id: 1, icon: FaAward, label: 'Tecnica profesional' },
-  { id: 2, icon: FaHeart, label: 'Atencion personalizada' },
-  { id: 3, icon: FaLeaf, label: 'Salud capilar real' },
-  { id: 4, icon: FaUsers, label: 'Equipo certificado' },
-]
+const badgeIcons = {
+  award: FaAward,
+  heart: FaHeart,
+  leaf: FaLeaf,
+  users: FaUsers,
+}
 
 function About() {
   const [flippedCards, setFlippedCards] = useState({})
@@ -40,13 +47,13 @@ function About() {
 
           <div className="absolute inset-x-0 bottom-0 p-6 md:p-10">
             <p className="text-xs font-black uppercase tracking-[0.24em] text-(--orchird-lilac) md:text-sm">
-              Sobre nosotros
+              {aboutPageContent.hero.eyebrow}
             </p>
             <h1 className="mt-2 text-4xl font-black uppercase leading-tight text-white md:text-6xl">
-              Equipo con proposito
+              {aboutPageContent.hero.title}
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-white/90 md:text-lg md:leading-8">
-              Construimos resultados visibles con un metodo humano, profesional y consistente.
+              {aboutPageContent.hero.description}
             </p>
           </div>
         </Motion.div>
@@ -103,7 +110,7 @@ function About() {
           transition={{ duration: 0.4 }}
         >
           {trustBadges.map((badge) => {
-            const Icon = badge.icon
+            const Icon = badgeIcons[badge.iconKey]
             return (
               <div
                 key={badge.id}
@@ -129,7 +136,7 @@ function About() {
             viewport={{ once: true, amount: 0.35 }}
             transition={{ duration: 0.4 }}
           >
-            Conoce Al Equipo
+            {aboutPageContent.teamTitle}
           </Motion.h2>
 
           <Motion.div
