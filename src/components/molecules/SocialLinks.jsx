@@ -17,7 +17,7 @@ function SocialLinks({ socials }) {
               href={item.href}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--orchird-black)] text-white transition hover:bg-[var(--orchird-green)]"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-(--orchird-black) text-white transition hover:bg-(--orchird-green)"
               aria-label={item.label}
             >
               {Icon ? <Icon /> : null}

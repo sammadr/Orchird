@@ -1,15 +1,15 @@
-import Hero from '../components/organisms/Hero'
-import SkillsSection from '../components/organisms/SkillsSection'
-import AboutSection from '../components/organisms/AboutSection'
-import ProjectsSection from '../components/organisms/ProjectsSection'
+import HomeBannerCarousel from '../components/organisms/HomeBannerCarousel'
+import FeaturedWorkSection from '../components/organisms/FeaturedWorkSection'
+import TestimonialsSection from '../components/organisms/TestimonialsSection'
+import FeaturedBlogSection from '../components/organisms/FeaturedBlogSection'
 
 function Home() {
   return (
     <>
-      <Hero />
-      <SkillsSection />
-      <AboutSection />
-      <ProjectsSection />
+      <HomeBannerCarousel />
+      <FeaturedWorkSection />
+      <TestimonialsSection />
+      <FeaturedBlogSection />
     </>
   )
 }

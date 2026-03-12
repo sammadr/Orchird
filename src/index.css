@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap");
 @import "tailwindcss";
 
 :root {
@@ -16,9 +18,9 @@
 body {
   margin: 0;
   min-width: 320px;
-  background: linear-gradient(140deg, var(--orchird-smoke), #ffffff 45%, #f4e8fb);
+  background: var(--orchird-smoke);
   color: var(--orchird-black);
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Inter", Arial, Helvetica, sans-serif;
 }
 
 a {
@@ -31,10 +33,6 @@ a {
 }
 
 .container-x {
-  width: min(1120px, 92%);
+  width: min(1380px, 96%);
   margin-inline: auto;
-}
-
-.section-pad {
-  padding-block: clamp(2.5rem, 6vw, 5rem);
 }
