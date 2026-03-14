@@ -15,29 +15,33 @@ import ForgotPasswordPage from './features/auth/pages/ForgotPasswordPage'
 import ResetPasswordPage from './features/auth/pages/ResetPasswordPage'
 import Billing from './pages/Billing'
 import NotFound from './pages/NotFound'
+import ScrollToTop from './components/utils/ScrollToTop'
 
 function App() {
   return (
-    <Routes>
-      <Route element={<MainLayout />}>
-        <Route path="/" element={<Home />} />
-        <Route path="/inicio" element={<Navigate to="/" replace />} />
-        <Route path="/servicios" element={<Services />} />
-        <Route path="/sobre-nosotros" element={<About />} />
-        <Route path="/blog" element={<Blog />} />
-        <Route path="/blog/:id" element={<BlogDetail />} />
-        <Route path="/nuestro-trabajo" element={<Work />} />
-        <Route path="/tienda" element={<Store />} />
-        <Route path="/reservas" element={<Reservations />} />
-        <Route path="/contacto" element={<Contact />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/registro" element={<RegisterPage />} />
-        <Route path="/recuperar-password" element={<ForgotPasswordPage />} />
-        <Route path="/cambiar-password" element={<ResetPasswordPage />} />
-        <Route path="/facturacion" element={<Billing />} />
-      </Route>
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <>
+      <ScrollToTop />
+      <Routes>
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/inicio" element={<Navigate to="/" replace />} />
+          <Route path="/servicios" element={<Services />} />
+          <Route path="/sobre-nosotros" element={<About />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:id" element={<BlogDetail />} />
+          <Route path="/nuestro-trabajo" element={<Work />} />
+          <Route path="/tienda" element={<Store />} />
+          <Route path="/reservas" element={<Reservations />} />
+          <Route path="/contacto" element={<Contact />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/registro" element={<RegisterPage />} />
+          <Route path="/recuperar-password" element={<ForgotPasswordPage />} />
+          <Route path="/cambiar-password" element={<ResetPasswordPage />} />
+          <Route path="/facturacion" element={<Billing />} />
+        </Route>
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
   )
 }
 
