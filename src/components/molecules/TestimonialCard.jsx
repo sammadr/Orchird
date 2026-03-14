@@ -1,4 +1,4 @@
-import { FaQuoteLeft, FaStar, FaUserCheck } from 'react-icons/fa'
+﻿import { FaQuoteLeft, FaStar, FaUserCheck } from 'react-icons/fa'
 
 function TestimonialCard({ testimonial }) {
   return (
@@ -28,10 +28,17 @@ function TestimonialCard({ testimonial }) {
 
       <div className="mt-5 flex items-center justify-between gap-2 border-t border-(--orchird-lilac)/45 pt-4">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#6b3f9f]">{testimonial.service}</p>
-        <span className="inline-flex items-center gap-1 rounded-full bg-(--orchird-smoke) px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-(--orchird-green-dark)">
-          <FaUserCheck />
-          Verificado
-        </span>
+        <div className="flex items-center gap-2">
+          {testimonial.isNew ? (
+            <span className="inline-flex items-center rounded-full border border-[#d5b760] bg-[#fff4cc] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-[#8a6500]">
+              Nuevo
+            </span>
+          ) : null}
+          <span className="inline-flex items-center gap-1 rounded-full bg-(--orchird-smoke) px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-(--orchird-green-dark)">
+            <FaUserCheck />
+            Verificado
+          </span>
+        </div>
       </div>
     </article>
   )
