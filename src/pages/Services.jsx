@@ -1,9 +1,10 @@
-import { Link } from 'react-router-dom'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { FaClipboardCheck, FaSpa, FaCut, FaArrowRight } from 'react-icons/fa'
+import { FaClipboardCheck, FaSpa, FaCut, FaArrowRight, FaCheckCircle } from 'react-icons/fa'
 import { servicesCatalog } from '../data/servicesCatalog'
 import { servicesPageContent } from '../data/servicesPage'
+import { reservationServices } from '../data/reservationsData'
 
 const Motion = motion
 const iconMap = {
@@ -13,14 +14,72 @@ const iconMap = {
 }
 
 function Services() {
-  const [flippedCards, setFlippedCards] = useState({})
+  const navigate = useNavigate()
+  const [flippedCardId, setFlippedCardId] = useState(null)
+  const [toastMessage, setToastMessage] = useState('')
+
+  const resolveReservationServiceId = (service) => {
+    const normalizedName = service.name.trim().toLowerCase()
+
+    const mapByCatalogId = {
+      1: 'rezocut',
+      2: 'peinado-2',
+      3: 'corte-forma',
+      4: 'tinte-completo',
+      5: 'barberia',
+      6: 'blower',
+      7: 'cabina-k18',
+      8: 'wash-go',
+    }
+
+    if (mapByCatalogId[service.id]) return mapByCatalogId[service.id]
+
+    const byName = reservationServices.find((item) => item.name.trim().toLowerCase() === normalizedName)
+    return byName?.id ?? null
+  }
+
+  const handleReserveFromService = (service) => {
+    const reservationServiceId = resolveReservationServiceId(service)
+    const isLogged = localStorage.getItem('orchirdSession') === 'active'
+
+    if (reservationServiceId) {
+      const pending = JSON.parse(localStorage.getItem('orchirdReservationPrefill') ?? '[]')
+      const draft = JSON.parse(localStorage.getItem('orchirdReservationDraftIds') ?? '[]')
+      const unique = Array.from(new Set([...draft, ...pending, reservationServiceId]))
+      localStorage.setItem('orchirdReservationPrefill', JSON.stringify(unique))
+      localStorage.setItem('orchirdReservationToast', `Servicio agregado: ${service.name}`)
+      setToastMessage(`Servicio agregado: ${service.name}`)
+    }
+
+    if (!isLogged) {
+      navigate('/login', { state: { redirectTo: '/reservas' } })
+      return
+    }
+
+    navigate('/reservas')
+  }
 
   const toggleCard = (serviceId) => {
-    setFlippedCards((prev) => ({ ...prev, [serviceId]: !prev[serviceId] }))
+    setFlippedCardId((prev) => (prev === serviceId ? null : serviceId))
   }
+
+  useEffect(() => {
+    if (!toastMessage) return undefined
+    const timerId = setTimeout(() => setToastMessage(''), 2200)
+    return () => clearTimeout(timerId)
+  }, [toastMessage])
 
   return (
     <div className="relative overflow-hidden pb-20">
+      {toastMessage ? (
+        <div className="fixed right-4 top-24 z-50 rounded-2xl border border-(--orchird-green)/40 bg-white/95 px-4 py-3 text-sm font-bold text-(--orchird-green-dark) shadow-[0_14px_28px_rgba(33,191,72,0.22)] backdrop-blur-sm">
+          <span className="inline-flex items-center gap-2">
+            <FaCheckCircle />
+            {toastMessage}
+          </span>
+        </div>
+      ) : null}
+
       <div className="pointer-events-none absolute -left-20 top-20 h-72 w-72 rounded-full bg-(--orchird-lilac)/40 blur-3xl" />
       <div className="pointer-events-none absolute -right-24 top-[36%] h-72 w-72 rounded-full bg-(--orchird-green)/15 blur-3xl" />
 
@@ -169,7 +228,7 @@ function Services() {
             >
               <Motion.div
                 className="relative min-h-92.5 rounded-3xl transform-3d"
-                animate={{ rotateY: flippedCards[service.id] ? 180 : 0 }}
+                animate={{ rotateY: flippedCardId === service.id ? 180 : 0 }}
                 transition={{ duration: 0.55, ease: 'easeInOut' }}
               >
                 <div className="absolute inset-0 overflow-hidden rounded-3xl bg-white shadow-[0_18px_38px_rgba(69,32,110,0.12)] backface-hidden transition group-hover:-translate-y-1.5 group-hover:shadow-[0_24px_52px_rgba(69,32,110,0.2)]">
@@ -194,13 +253,14 @@ function Services() {
 
                       <div className="mt-auto pt-4">
                         <div className="flex flex-wrap gap-2">
-                          <Link
-                            to="/reservas"
+                          <button
+                            type="button"
+                            onClick={() => handleReserveFromService(service)}
                             className="inline-flex items-center justify-center gap-2 rounded-full bg-(--orchird-green) px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-(--orchird-green-dark)"
                           >
                             Reservar
                             <FaArrowRight className="text-[10px]" />
-                          </Link>
+                          </button>
                           <button
                             type="button"
                             onClick={() => toggleCard(service.id)}
@@ -214,7 +274,7 @@ function Services() {
                   </div>
                 </div>
 
-                <div className="absolute inset-0 flex rounded-3xl border border-(--orchird-lilac)/70 bg-linear-to-br from-[#f7edfc] via-white to-[#e7f8ec] p-6 shadow-[0_18px_38px_rgba(69,32,110,0.12)] backface-hidden">
+                <div className="absolute inset-0 flex overflow-hidden rounded-3xl border border-(--orchird-lilac)/70 bg-linear-to-br from-[#f7edfc] via-white to-[#e7f8ec] p-6 shadow-[0_18px_38px_rgba(69,32,110,0.12)] backface-hidden transform-[rotateY(180deg)]">
                   <div className="flex h-full w-full flex-col">
                     <p className="text-xs font-black uppercase tracking-[0.2em] text-[#9059c5]">Protocolo Orchird</p>
                     <h4 className="mt-2 text-2xl font-black uppercase text-[#2a173d] md:text-3xl">{service.name}</h4>
@@ -231,13 +291,14 @@ function Services() {
                     </ol>
 
                     <div className="mt-auto flex flex-wrap gap-2 pt-5">
-                      <Link
-                        to="/reservas"
+                      <button
+                        type="button"
+                        onClick={() => handleReserveFromService(service)}
                         className="inline-flex items-center justify-center gap-2 rounded-full bg-(--orchird-green) px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-(--orchird-green-dark)"
                       >
                         Reservar
                         <FaArrowRight className="text-[10px]" />
-                      </Link>
+                      </button>
                       <button
                         type="button"
                         onClick={() => toggleCard(service.id)}
