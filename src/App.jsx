@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+﻿import { Navigate, Route, Routes } from 'react-router-dom'
 import MainLayout from './layouts/MainLayout'
 import Home from './pages/Home'
 import Services from './pages/Services'
@@ -13,7 +13,11 @@ import LoginPage from './features/auth/pages/LoginPage'
 import RegisterPage from './features/auth/pages/RegisterPage'
 import ForgotPasswordPage from './features/auth/pages/ForgotPasswordPage'
 import ResetPasswordPage from './features/auth/pages/ResetPasswordPage'
+import RequireAuth from './features/auth/components/RequireAuth'
+import AccountOverviewPage from './features/account/pages/AccountOverviewPage'
+import AccountSettingsPage from './features/account/pages/AccountSettingsPage'
 import Billing from './pages/Billing'
+import BillingConfirmation from './pages/BillingConfirmation'
 import NotFound from './pages/NotFound'
 import ScrollToTop from './components/utils/ScrollToTop'
 
@@ -37,7 +41,24 @@ function App() {
           <Route path="/registro" element={<RegisterPage />} />
           <Route path="/recuperar-password" element={<ForgotPasswordPage />} />
           <Route path="/cambiar-password" element={<ResetPasswordPage />} />
+          <Route
+            path="/mi-cuenta"
+            element={
+              <RequireAuth>
+                <AccountOverviewPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/ajustes"
+            element={
+              <RequireAuth>
+                <AccountSettingsPage />
+              </RequireAuth>
+            }
+          />
           <Route path="/facturacion" element={<Billing />} />
+          <Route path="/facturacion/confirmacion" element={<BillingConfirmation />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
