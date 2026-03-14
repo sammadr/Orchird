@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+﻿import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
@@ -168,6 +168,7 @@ function Reservations() {
       appointments,
     })
     localStorage.setItem('orchirdReservations', JSON.stringify(savedRequests))
+    window.dispatchEvent(new Event('orchird-reservations-updated'))
     setHasPendingRequest(true)
 
     setSuccess(true)
@@ -519,6 +520,7 @@ function Reservations() {
 }
 
 export default Reservations
+
 
 
 
