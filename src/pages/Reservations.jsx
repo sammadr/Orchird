@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
   FaCalendarAlt,
   FaCheckCircle,
@@ -23,17 +23,48 @@ import {
 const MotionDiv = motion.div
 const MotionSection = motion.section
 const staffMap = new Map(reservationStaff.map((person) => [person.id, person]))
+const RESERVATION_DRAFT_KEY = 'orchirdReservationDraftIds'
+const RESERVATION_PREFILL_KEY = 'orchirdReservationPrefill'
+const RESERVATION_TOAST_KEY = 'orchirdReservationToast'
 
 function Reservations() {
-  const appointmentCounter = useRef(1)
   const isLogged = localStorage.getItem('orchirdSession') === 'active'
   const userName = localStorage.getItem('orchirdUserName') ?? 'Cliente'
   const userEmail = localStorage.getItem('orchirdUserEmail') ?? ''
   const userRole = localStorage.getItem('orchirdUserRole') ?? 'cliente'
-  const [appointments, setAppointments] = useState([])
+
+  const [appointments, setAppointments] = useState(() => {
+    const draftIds = JSON.parse(localStorage.getItem(RESERVATION_DRAFT_KEY) ?? '[]')
+    const prefillIds = JSON.parse(localStorage.getItem(RESERVATION_PREFILL_KEY) ?? '[]')
+
+    const validDraft = Array.isArray(draftIds) ? draftIds : []
+    const validPrefill = Array.isArray(prefillIds) ? prefillIds : []
+    const uniqueIds = Array.from(new Set([...validDraft, ...validPrefill]))
+
+    if (uniqueIds.length === 0) return []
+
+    const prefillServices = uniqueIds
+      .map((serviceId) => reservationServices.find((service) => service.id === serviceId))
+      .filter(Boolean)
+
+    return prefillServices.map((service, index) => ({
+      appointmentId: `ap-prefill-${index + 1}`,
+      serviceId: service.id,
+      serviceName: service.name,
+      category: service.category,
+      price: service.price,
+      duration: service.duration,
+      staffId: service.staffIds[0] ?? '',
+      dayId: '',
+      time: '',
+    }))
+  })
+
+  const appointmentCounter = useRef(1)
   const [notes, setNotes] = useState('')
   const [errors, setErrors] = useState('')
   const [success, setSuccess] = useState(false)
+  const [reservationToast, setReservationToast] = useState(() => localStorage.getItem(RESERVATION_TOAST_KEY) ?? '')
   const [hasPendingRequest, setHasPendingRequest] = useState(() => {
     const savedRequests = JSON.parse(localStorage.getItem('orchirdReservations') ?? '[]')
     return savedRequests.some(
@@ -44,29 +75,54 @@ function Reservations() {
   const groupedServices = useMemo(() => groupByCategory(reservationServices), [])
   const days = useMemo(() => getUpcomingDays(5), [])
 
+  useEffect(() => {
+    localStorage.removeItem(RESERVATION_TOAST_KEY)
+    localStorage.removeItem(RESERVATION_PREFILL_KEY)
+  }, [])
+
+  useEffect(() => {
+    appointmentCounter.current = appointments.length + 1
+
+    if (appointments.length === 0) {
+      localStorage.removeItem(RESERVATION_DRAFT_KEY)
+      return
+    }
+
+    const serviceIds = Array.from(new Set(appointments.map((item) => item.serviceId)))
+    localStorage.setItem(RESERVATION_DRAFT_KEY, JSON.stringify(serviceIds))
+  }, [appointments])
+
+  useEffect(() => {
+    if (!reservationToast) return undefined
+    const timerId = setTimeout(() => setReservationToast(''), 2400)
+    return () => clearTimeout(timerId)
+  }, [reservationToast])
+
   const totalAmount = appointments.reduce((total, item) => total + Number(item.price ?? 0), 0)
   const hasAppointments = appointments.length > 0
 
-  const handleAddService = (service) => {
+  const createAppointmentFromService = (service) => {
     const appointmentId = `ap-${appointmentCounter.current}`
     appointmentCounter.current += 1
-    const defaultStaff = service.staffIds[0] ?? ''
+
+    return {
+      appointmentId,
+      serviceId: service.id,
+      serviceName: service.name,
+      category: service.category,
+      price: service.price,
+      duration: service.duration,
+      staffId: service.staffIds[0] ?? '',
+      dayId: '',
+      time: '',
+    }
+  }
+
+  const handleAddService = (service) => {
     setSuccess(false)
     setErrors('')
-    setAppointments((prev) => [
-      ...prev,
-      {
-        appointmentId,
-        serviceId: service.id,
-        serviceName: service.name,
-        category: service.category,
-        price: service.price,
-        duration: service.duration,
-        staffId: defaultStaff,
-        dayId: '',
-        time: '',
-      },
-    ])
+    setReservationToast(`Servicio agregado: ${service.name}`)
+    setAppointments((prev) => [...prev, createAppointmentFromService(service)])
   }
 
   const handleRemoveAppointment = (appointmentId) => {
@@ -153,6 +209,22 @@ function Reservations() {
 
   return (
     <div className="relative overflow-hidden pb-20">
+      <AnimatePresence>
+        {reservationToast ? (
+          <motion.div
+            className="fixed right-4 top-24 z-50 rounded-2xl border border-(--orchird-green)/40 bg-white/95 px-4 py-3 text-sm font-bold text-(--orchird-green-dark) shadow-[0_14px_28px_rgba(33,191,72,0.22)] backdrop-blur-sm"
+            initial={{ opacity: 0, y: -10, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.96 }}
+            transition={{ duration: 0.2 }}
+          >
+            <span className="inline-flex items-center gap-2">
+              <FaCheckCircle />
+              {reservationToast}
+            </span>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
       <div className="pointer-events-none absolute -left-24 top-20 h-80 w-80 rounded-full bg-(--orchird-lilac)/32 blur-3xl" />
       <div className="pointer-events-none absolute -right-24 top-[42%] h-80 w-80 rounded-full bg-(--orchird-green)/14 blur-3xl" />
 
@@ -447,3 +519,17 @@ function Reservations() {
 }
 
 export default Reservations
+
+
+
+
+
+
+
+
+
+
+
+
+
+
