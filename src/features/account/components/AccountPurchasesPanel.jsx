@@ -1,7 +1,8 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FaCheckCircle, FaChevronDown, FaFilter, FaReceipt, FaSearch, FaShoppingBag } from 'react-icons/fa'
+import { FaCheckCircle, FaChevronDown, FaClock, FaFilter, FaReceipt, FaSearch, FaShoppingBag } from 'react-icons/fa'
 import { getCurrentUserCart, saveCurrentUserCart } from '../../../utils/cartStorage'
+import { getCurrentUserWaitlist } from '../../../utils/waitlistStorage'
 import {
   normalizePurchaseStatus,
   purchaseFilters,
@@ -29,6 +30,13 @@ const formatDate = (value) => {
   }).format(date)
 }
 
+const formatFilterDate = (value) => {
+  if (!value) return '--/--'
+  const [year, month, day] = String(value).split('-')
+  if (!year || !month || !day) return '--/--'
+  return `${day}/${month}`
+}
+
 const getDateFromOrder = (order) => {
   const source = order.createdAt ?? order.generatedAt
   const date = new Date(source)
@@ -52,9 +60,14 @@ function AccountPurchasesPanel() {
   const [expandedOrder, setExpandedOrder] = useState(null)
   const [orders, setOrders] = useState([])
   const [invoiceSearch, setInvoiceSearch] = useState('')
-  const [dateFrom, setDateFrom] = useState('')
-  const [dateTo, setDateTo] = useState('')
+  const [dateFromInput, setDateFromInput] = useState('')
+  const [dateToInput, setDateToInput] = useState('')
+  const [appliedDateFrom, setAppliedDateFrom] = useState('')
+  const [appliedDateTo, setAppliedDateTo] = useState('')
   const [repeatToast, setRepeatToast] = useState({ message: '', allowCart: false })
+  const [waitlistProductIds, setWaitlistProductIds] = useState(() =>
+    new Set(getCurrentUserWaitlist().map((item) => Number(item.productId))),
+  )
 
   useEffect(() => {
     const syncOrders = () => {
@@ -78,6 +91,20 @@ function AccountPurchasesPanel() {
   }, [userEmail])
 
   useEffect(() => {
+    const syncWaitlist = () => {
+      setWaitlistProductIds(new Set(getCurrentUserWaitlist().map((item) => Number(item.productId))))
+    }
+
+    window.addEventListener('storage', syncWaitlist)
+    window.addEventListener('orchird-waitlist-updated', syncWaitlist)
+
+    return () => {
+      window.removeEventListener('storage', syncWaitlist)
+      window.removeEventListener('orchird-waitlist-updated', syncWaitlist)
+    }
+  }, [])
+
+  useEffect(() => {
     if (!repeatToast.message) return undefined
     const timerId = setTimeout(() => setRepeatToast({ message: '', allowCart: false }), 3200)
     return () => clearTimeout(timerId)
@@ -96,8 +123,8 @@ function AccountPurchasesPanel() {
 
   const visibleOrders = useMemo(() => {
     const normalizedSearch = invoiceSearch.trim().toLowerCase()
-    const fromDate = dateFrom ? toDayStart(dateFrom) : null
-    const toDate = dateTo ? toDayEnd(dateTo) : null
+    const fromDate = appliedDateFrom ? toDayStart(appliedDateFrom) : null
+    const toDate = appliedDateTo ? toDayEnd(appliedDateTo) : null
 
     return orders.filter((order) => {
       const statusMatches =
@@ -118,7 +145,17 @@ function AccountPurchasesPanel() {
 
       return true
     })
-  }, [activeFilter, orders, invoiceSearch, dateFrom, dateTo])
+  }, [activeFilter, orders, invoiceSearch, appliedDateFrom, appliedDateTo])
+
+  const appliedDateLabel = useMemo(() => {
+    if (!appliedDateFrom && !appliedDateTo) return ''
+    return `Aplicado: ${formatFilterDate(appliedDateFrom)} - ${formatFilterDate(appliedDateTo)}`
+  }, [appliedDateFrom, appliedDateTo])
+
+  const handleApplyDateFilter = () => {
+    setAppliedDateFrom(dateFromInput)
+    setAppliedDateTo(dateToInput)
+  }
 
   const handleRepeatPurchase = (order) => {
     const products = Array.isArray(order.items) ? order.items : []
@@ -183,10 +220,16 @@ function AccountPurchasesPanel() {
             <h2 className="mt-1 text-2xl font-black text-[#45206e] md:text-3xl">Mis compras</h2>
           </div>
         </div>
-        <span className="inline-flex items-center gap-2 rounded-full border border-(--orchird-lilac)/55 bg-[#f8efff] px-3 py-1.5 text-xs font-black uppercase tracking-[0.1em] text-[#6d3ea2]">
-          <FaReceipt className="text-[11px]" />
-          {orders.length} facturas
-        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-2 rounded-full border border-(--orchird-lilac)/55 bg-[#f8efff] px-3 py-1.5 text-xs font-black uppercase tracking-[0.1em] text-[#6d3ea2]">
+            <FaReceipt className="text-[11px]" />
+            {orders.length} facturas
+          </span>
+          <span className="inline-flex items-center gap-2 rounded-full border border-(--orchird-green)/35 bg-(--orchird-green)/12 px-3 py-1.5 text-xs font-black uppercase tracking-[0.1em] text-(--orchird-green-dark)">
+            <FaClock className="text-[11px]" />
+            {waitlistProductIds.size} en lista de espera
+          </span>
+        </div>
       </div>
 
       <div className="rounded-2xl border border-(--orchird-lilac)/50 bg-[#fbf7ff] p-4 md:p-5">
@@ -237,8 +280,8 @@ function AccountPurchasesPanel() {
             <span className="text-[11px] font-black uppercase tracking-[0.1em] text-[#7a49af]">Desde</span>
             <input
               type="date"
-              value={dateFrom}
-              onChange={(event) => setDateFrom(event.target.value)}
+              value={dateFromInput}
+              onChange={(event) => setDateFromInput(event.target.value)}
               className="h-11 w-full rounded-xl border border-(--orchird-lilac)/55 bg-white px-3 text-sm text-(--orchird-black)/85 outline-none transition focus:border-(--orchird-lavender)"
             />
           </label>
@@ -247,11 +290,40 @@ function AccountPurchasesPanel() {
             <span className="text-[11px] font-black uppercase tracking-[0.1em] text-[#7a49af]">Hasta</span>
             <input
               type="date"
-              value={dateTo}
-              onChange={(event) => setDateTo(event.target.value)}
+              value={dateToInput}
+              onChange={(event) => setDateToInput(event.target.value)}
               className="h-11 w-full rounded-xl border border-(--orchird-lilac)/55 bg-white px-3 text-sm text-(--orchird-black)/85 outline-none transition focus:border-(--orchird-lavender)"
             />
           </label>
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={handleApplyDateFilter}
+            className="inline-flex h-10 items-center justify-center rounded-xl bg-linear-to-r from-(--orchird-lavender) to-[#9c65ca] px-4 text-xs font-black uppercase tracking-[0.12em] text-white transition hover:-translate-y-0.5 hover:brightness-105"
+          >
+            Filtrar por fecha
+          </button>
+          {(appliedDateFrom || appliedDateTo) ? (
+            <button
+              type="button"
+              onClick={() => {
+                setDateFromInput('')
+                setDateToInput('')
+                setAppliedDateFrom('')
+                setAppliedDateTo('')
+              }}
+              className="inline-flex h-10 items-center justify-center rounded-xl border border-(--orchird-lilac)/55 bg-white px-4 text-xs font-black uppercase tracking-[0.12em] text-[#6d3ea2] transition hover:bg-(--orchird-lilac)/20"
+            >
+              Limpiar fechas
+            </button>
+          ) : null}
+          {appliedDateLabel ? (
+            <span className="inline-flex h-10 items-center rounded-xl border border-(--orchird-lilac)/55 bg-[#f8efff] px-3 text-xs font-black uppercase tracking-[0.1em] text-[#6d3ea2]">
+              {appliedDateLabel}
+            </span>
+          ) : null}
         </div>
       </div>
 
@@ -323,7 +395,15 @@ function AccountPurchasesPanel() {
                         <ul className="mt-2 space-y-2 text-sm text-(--orchird-black)/78">
                           {products.map((item, index) => (
                             <li key={`${order.id}-prod-${index}`} className="flex items-center justify-between gap-2">
-                              <span className="truncate">{item.name} x{item.quantity}</span>
+                              <div className="flex min-w-0 items-center gap-2">
+                                <span className="truncate">{item.name} x{item.quantity}</span>
+                                {waitlistProductIds.has(Number(item.id)) ? (
+                                  <span className="relative inline-flex items-center gap-1 overflow-hidden rounded-full border border-amber-300 bg-linear-to-r from-amber-100 to-yellow-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.1em] text-amber-700 shadow-[0_0_0_1px_rgba(251,191,36,0.18)] transition hover:brightness-105">
+                                    <span className="inline-flex h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
+                                    En lista de espera
+                                  </span>
+                                ) : null}
+                              </div>
                               <span className="font-bold">{formatMoney(Number(item.unitPrice ?? 0) * Number(item.quantity ?? 0))}</span>
                             </li>
                           ))}
@@ -358,3 +438,4 @@ function AccountPurchasesPanel() {
 }
 
 export default AccountPurchasesPanel
+
