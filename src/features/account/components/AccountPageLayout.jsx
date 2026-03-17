@@ -11,16 +11,10 @@ function AccountPageLayout({ eyebrow, title, subtitle, children }) {
 
       <div className="mt-6 rounded-3xl border border-(--orchird-lilac)/55 bg-white p-5 shadow-[0_16px_34px_rgba(69,32,110,0.12)] md:p-7">
         {children}
-      </div>
-
-      <div className="mt-6 rounded-2xl border border-(--orchird-green)/35 bg-(--orchird-green)/10 px-4 py-3 text-sm font-semibold text-(--orchird-green-dark)">
-        <span className="inline-flex items-center gap-2">
-          <FaArrowRight className="text-xs" />
-          Etapa 2 iniciada: la estructura de cuenta ya esta lista para seguir implementando funcionalidades.
-        </span>
-      </div>
+      </div> 
     </section>
   )
 }
 
 export default AccountPageLayout
+
