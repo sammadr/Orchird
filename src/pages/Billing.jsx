@@ -75,7 +75,7 @@ function Billing() {
 
   const [shippingMethod, setShippingMethod] = useState(shippingOptions[0].id)
   const [promoCode, setPromoCode] = useState('')
-  const [promoApplied, setPromoApplied] = useState(null)
+  const [promoAppliedList, setPromoAppliedList] = useState([])
   const [alert, setAlert] = useState({ message: '', type: 'success' })
 
   const [reviewedReservations] = useState(() => {
@@ -106,10 +106,17 @@ function Billing() {
 
   const selectedShipping = shippingOptions.find((option) => option.id === shippingMethod) ?? shippingOptions[0]
 
-  const productsDiscount = promoApplied?.kind === 'products_percent' ? productsSubtotal * Number(promoApplied.value ?? 0) : 0
-  const reservationsDiscount =
-    promoApplied?.kind === 'reservations_percent' ? reservationsSubtotal * Number(promoApplied.value ?? 0) : 0
-  const shippingDiscount = promoApplied?.kind === 'free_shipping' ? selectedShipping.fee : 0
+  const productsDiscountRaw = promoAppliedList
+    .filter((promo) => promo.kind === 'products_percent')
+    .reduce((sum, promo) => sum + productsSubtotal * Number(promo.value ?? 0), 0)
+  const reservationsDiscountRaw = promoAppliedList
+    .filter((promo) => promo.kind === 'reservations_percent')
+    .reduce((sum, promo) => sum + reservationsSubtotal * Number(promo.value ?? 0), 0)
+  const shippingDiscountRaw = promoAppliedList.some((promo) => promo.kind === 'free_shipping') ? selectedShipping.fee : 0
+
+  const productsDiscount = Math.min(productsSubtotal, productsDiscountRaw)
+  const reservationsDiscount = Math.min(reservationsSubtotal, reservationsDiscountRaw)
+  const shippingDiscount = Math.min(selectedShipping.fee, shippingDiscountRaw)
 
   const safeProducts = Math.max(0, productsSubtotal - productsDiscount)
   const safeReservations = Math.max(0, reservationsSubtotal - reservationsDiscount)
@@ -152,7 +159,7 @@ function Billing() {
 
   const clearCart = () => {
     setCartItems([])
-    setPromoApplied(null)
+    setPromoAppliedList([])
     setPromoCode('')
     setAlert({ message: 'Carrito vaciado correctamente.', type: 'success' })
   }
@@ -161,7 +168,6 @@ function Billing() {
     const normalized = promoCode.trim().toUpperCase()
 
     if (!normalized) {
-      setPromoApplied(null)
       setAlert({ message: 'Ingresa un código promocional.', type: 'error' })
       return
     }
@@ -169,13 +175,24 @@ function Billing() {
     const promo = promoExamples.find((item) => item.code === normalized)
 
     if (!promo) {
-      setPromoApplied(null)
       setAlert({ message: 'Código no válido por ahora.', type: 'error' })
       return
     }
 
-    setPromoApplied(promo)
+    const alreadyApplied = promoAppliedList.some((item) => item.code === promo.code)
+    if (alreadyApplied) {
+      setAlert({ message: `El código ${promo.code} ya está aplicado.`, type: 'error' })
+      return
+    }
+
+    setPromoAppliedList((prev) => [...prev, promo])
+    setPromoCode('')
     setAlert({ message: `Código aplicado: ${promo.code} (${promo.label}).`, type: 'success' })
+  }
+
+  const removePromoCode = (code) => {
+    setPromoAppliedList((prev) => prev.filter((promo) => promo.code !== code))
+    setAlert({ message: `Código removido: ${code}.`, type: 'success' })
   }
 
   const proceedToPayment = () => {
@@ -191,7 +208,7 @@ function Billing() {
       items: cartItems,
       reviewedReservations,
       shippingMethod: selectedShipping,
-      promoApplied,
+      promoApplied: promoAppliedList,
       totals: {
         productsSubtotal,
         productsDiscount,
@@ -397,6 +414,21 @@ function Billing() {
                   <button key={promo.code} type="button" onClick={() => setPromoCode(promo.code)} className="rounded-full border border-(--orchird-lilac)/60 bg-[#faf3ff] px-3 py-1 text-xs font-black uppercase tracking-[0.08em] text-[#6d3ea2] transition duration-200 hover:-translate-y-0.5 hover:bg-(--orchird-lilac)/25 hover:shadow-[0_8px_16px_rgba(109,62,162,0.2)]">{promo.code}</button>
                 ))}
               </div>
+              {promoAppliedList.length > 0 ? (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {promoAppliedList.map((promo) => (
+                    <button
+                      key={promo.code}
+                      type="button"
+                      onClick={() => removePromoCode(promo.code)}
+                      className="inline-flex items-center gap-1 rounded-full border border-(--orchird-green)/40 bg-(--orchird-green)/12 px-3 py-1 text-xs font-black uppercase tracking-[0.08em] text-(--orchird-green-dark) transition hover:bg-(--orchird-green)/20"
+                    >
+                      {promo.code}
+                      <span className="text-[10px]">×</span>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
               <p className="mt-2 text-xs text-(--orchird-black)/65">Cupones de ejemplo: {promoExamples.map((item) => `${item.code} (${item.label})`).join(' · ')}</p>
             </section>
           </div>
@@ -430,3 +462,10 @@ function Billing() {
 }
 
 export default Billing
+
+
+
+
+
+
+
