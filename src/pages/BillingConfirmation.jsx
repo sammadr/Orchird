@@ -1,6 +1,8 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FaCheckCircle, FaClock, FaExclamationTriangle } from 'react-icons/fa'
+import { saveCurrentUserCart } from '../utils/cartStorage'
+import { pushNotification } from '../utils/notificationsStorage'
 
 const PURCHASE_HISTORY_KEY = 'orchirdPurchaseOrders'
 const formatMoney = (value) => `RD$ ${Number(value ?? 0).toLocaleString('en-US')}`
@@ -20,7 +22,7 @@ const paymentStates = {
   },
   failed: {
     label: 'Fallido',
-    description: 'El pago fue rechazado. Intenta con otro método.',
+    description: 'El pago fue rechazado. Indica la causa para decidir si se conserva el carrito.',
     badge: 'border-red-300 bg-red-50 text-red-700',
     icon: FaExclamationTriangle,
   },
@@ -39,9 +41,27 @@ const savePurchaseHistory = (list) => {
 function BillingConfirmation() {
   const [draft, setDraft] = useState(() => JSON.parse(localStorage.getItem('orchirdInvoiceDraft') ?? 'null'))
   const [paymentStatus, setPaymentStatus] = useState(() => draft?.paymentStatus ?? 'pending')
+  const [failedReason, setFailedReason] = useState(() => draft?.failedReason ?? 'payment_method')
 
   const statusConfig = paymentStates[paymentStatus] ?? paymentStates.pending
   const StatusIcon = statusConfig.icon
+
+  const clearCartAfterProcessedPayment = () => {
+    saveCurrentUserCart([])
+    localStorage.removeItem('orchirdCheckoutDraft')
+    window.dispatchEvent(new Event('orchird-cart-updated'))
+  }
+
+  useEffect(() => {
+    if (paymentStatus === 'approved' || paymentStatus === 'pending') {
+      clearCartAfterProcessedPayment()
+      return
+    }
+
+    if (paymentStatus === 'failed' && failedReason === 'system') {
+      clearCartAfterProcessedPayment()
+    }
+  }, [paymentStatus, failedReason])
 
   useEffect(() => {
     if (!draft?.id) return
@@ -56,6 +76,7 @@ function BillingConfirmation() {
       userEmail,
       userName,
       paymentStatus,
+      failedReason: paymentStatus === 'failed' ? failedReason : null,
       createdAt: draft.generatedAt ?? new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
@@ -71,13 +92,55 @@ function BillingConfirmation() {
     }
 
     savePurchaseHistory(history)
-  }, [draft, paymentStatus])
+  }, [draft, paymentStatus, failedReason])
+
+  useEffect(() => {
+    if (!draft?.id) return
+
+    const statusLabel = paymentStates[paymentStatus]?.label ?? 'Pendiente'
+    const messageByStatus = {
+      approved: `Tu factura ${draft.id} fue aprobada correctamente.`,
+      pending: `Tu factura ${draft.id} está en validación. Te avisaremos cuando cambie.`,
+      failed:
+        failedReason === 'payment_method'
+          ? `Tu factura ${draft.id} falló por método de pago. Puedes reintentar sin perder el carrito.`
+          : `Tu factura ${draft.id} tuvo un error técnico. El equipo ya fue notificado.`,
+    }
+
+    pushNotification({
+      type: `purchase_${paymentStatus}`,
+      title: `Pago ${statusLabel}`,
+      message: messageByStatus[paymentStatus] ?? messageByStatus.pending,
+      externalKey: `invoice-${draft.id}-${paymentStatus}-${failedReason}`,
+      meta: {
+        invoiceId: draft.id,
+        paymentStatus,
+      },
+    })
+  }, [draft, paymentStatus, failedReason])
 
   const updatePaymentStatus = (nextStatus) => {
     setPaymentStatus(nextStatus)
     if (!draft) return
 
-    const nextDraft = { ...draft, paymentStatus: nextStatus }
+    const nextDraft = {
+      ...draft,
+      paymentStatus: nextStatus,
+      failedReason: nextStatus === 'failed' ? failedReason : null,
+    }
+    setDraft(nextDraft)
+    localStorage.setItem('orchirdInvoiceDraft', JSON.stringify(nextDraft))
+  }
+
+  const updateFailedReason = (nextReason) => {
+    setFailedReason(nextReason)
+    if (!draft) return
+
+    const nextDraft = {
+      ...draft,
+      paymentStatus: 'failed',
+      failedReason: nextReason,
+    }
     setDraft(nextDraft)
     localStorage.setItem('orchirdInvoiceDraft', JSON.stringify(nextDraft))
   }
@@ -116,6 +179,33 @@ function BillingConfirmation() {
             Marcar fallido
           </button>
         </div>
+
+        {paymentStatus === 'failed' ? (
+          <div className="mt-4 rounded-2xl border border-red-200 bg-red-50/65 p-4">
+            <p className="text-xs font-black uppercase tracking-[0.12em] text-[#9d2f4f]">Motivo del fallo</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => updateFailedReason('payment_method')}
+                className={`rounded-full px-3 py-1.5 text-xs font-black uppercase tracking-[0.1em] transition ${failedReason === 'payment_method' ? 'bg-[#d93f68] text-white' : 'bg-white text-[#9d2f4f]'}`}
+              >
+                Método de pago
+              </button>
+              <button
+                type="button"
+                onClick={() => updateFailedReason('system')}
+                className={`rounded-full px-3 py-1.5 text-xs font-black uppercase tracking-[0.1em] transition ${failedReason === 'system' ? 'bg-[#d93f68] text-white' : 'bg-white text-[#9d2f4f]'}`}
+              >
+                Error técnico
+              </button>
+            </div>
+            <p className="mt-2 text-xs font-semibold text-[#7a2a44]">
+              {failedReason === 'payment_method'
+                ? 'Se conserva el carrito para que el cliente reintente el pago.'
+                : 'Se limpia el carrito porque el fallo fue técnico y no del cliente.'}
+            </p>
+          </div>
+        ) : null}
 
         {draft ? (
           <div className="mt-6 rounded-2xl border border-(--orchird-lilac)/50 bg-[#faf5fd] p-5">
