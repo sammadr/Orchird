@@ -1,9 +1,11 @@
-﻿import { useState } from 'react'
-import { FaCalendarCheck, FaClock, FaShoppingBag, FaStar } from 'react-icons/fa'
+import { useState } from 'react'
+import { FaBell, FaCalendarCheck, FaClock, FaShoppingBag, FaStar } from 'react-icons/fa'
 import AccountPageLayout from '../components/AccountPageLayout'
+import AccountNotificationsPanel from '../components/AccountNotificationsPanel'
 import AccountPurchasesPanel from '../components/AccountPurchasesPanel'
 import AccountReservationsPanel from '../components/AccountReservationsPanel'
 import AccountTestimonialsPanel from '../components/AccountTestimonialsPanel'
+import AccountWaitlistPanel from '../components/AccountWaitlistPanel'
 import { accountSections } from '../data/accountSections'
 
 const sectionIcons = {
@@ -11,9 +13,10 @@ const sectionIcons = {
   compras: FaShoppingBag,
   testimonios: FaStar,
   'lista-espera': FaClock,
+  notificaciones: FaBell,
 }
 
-const enabledSections = new Set(['reservas', 'compras', 'testimonios'])
+const enabledSections = new Set(['reservas', 'compras', 'testimonios', 'lista-espera', 'notificaciones'])
 
 function AccountOverviewPage() {
   const userName = localStorage.getItem('orchirdUserName') ?? 'Cliente'
@@ -70,6 +73,8 @@ function AccountOverviewPage() {
         {activeSection === 'reservas' ? <AccountReservationsPanel /> : null}
         {activeSection === 'compras' ? <AccountPurchasesPanel /> : null}
         {activeSection === 'testimonios' ? <AccountTestimonialsPanel /> : null}
+        {activeSection === 'lista-espera' ? <AccountWaitlistPanel /> : null}
+        {activeSection === 'notificaciones' ? <AccountNotificationsPanel /> : null}
 
         {!enabledSections.has(activeSection) ? (
           <div className="rounded-2xl border border-(--orchird-lilac)/55 bg-[#fbf7ff] px-4 py-6 md:px-5">
