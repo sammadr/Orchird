@@ -27,7 +27,7 @@ function About() {
   }
 
   return (
-    <div className="relative overflow-hidden pb-20">
+    <div className="relative overflow-hidden pb-0">
       <div className="pointer-events-none absolute -left-16 top-24 h-72 w-72 rounded-full bg-(--orchird-lilac)/30 blur-3xl" />
       <div className="pointer-events-none absolute -right-20 top-[35%] h-80 w-80 rounded-full bg-(--orchird-green)/12 blur-3xl" />
 
@@ -129,15 +129,22 @@ function About() {
 
       <section className="mt-16 bg-linear-to-b from-(--orchird-lilac)/85 via-[#d7b5eb] to-(--orchird-lilac)/95 py-14 md:py-20">
         <div className="container-x">
-          <Motion.h2
-            className="text-center text-4xl font-black uppercase text-(--orchird-green) md:text-6xl"
+          <Motion.div
+            className="max-w-3xl"
             initial={{ opacity: 0, y: 14 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.35 }}
             transition={{ duration: 0.4 }}
           >
-            {aboutPageContent.teamTitle}
-          </Motion.h2>
+            <p className="text-sm font-black uppercase tracking-[0.18em] text-[#6c39a2] md:text-base">Equipo Orchird</p>
+            <h2 className="mt-2 text-4xl font-black uppercase tracking-tight text-(--orchird-green) md:text-6xl">
+              {aboutPageContent.teamTitle}
+            </h2>
+            <span className="mt-4 block h-1 w-24 rounded-full bg-linear-to-r from-(--orchird-lavender) to-[#8f00e4] transition-all duration-300 hover:w-32" />
+            <p className="mt-5 text-base leading-8 text-(--orchird-black)/80 md:text-xl md:leading-9">
+              Un equipo especializado en rizos, color y salud capilar, enfocado en resultados reales y una experiencia humana en cada cita.
+            </p>
+          </Motion.div>
 
           <Motion.div
             className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
@@ -226,3 +233,5 @@ function About() {
 }
 
 export default About
+
+
