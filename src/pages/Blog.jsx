@@ -44,17 +44,6 @@ function Blog() {
   const start = (page - 1) * pageSize
   const currentPosts = sidePosts.slice(start, start + pageSize)
 
-  const handleNextPage = () => {
-    if (page >= totalPages) return
-    setDirection(1)
-    setPage((prev) => prev + 1)
-  }
-
-  const handlePrevPage = () => {
-    if (page <= 1) return
-    setDirection(-1)
-    setPage((prev) => prev - 1)
-  }
 
   return (
     <div className="relative overflow-hidden pb-20">
@@ -232,34 +221,9 @@ function Blog() {
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.35 }}
         >
-          <button
-            type="button"
-            onClick={handlePrevPage}
-            disabled={page <= 1 || !featuredPost}
-            className={`inline-flex min-w-52 items-center justify-center rounded-2xl px-6 py-4 text-2xl font-black uppercase tracking-[0.06em] transition ${
-              page > 1 && featuredPost
-                ? 'bg-white text-[#6f3ea5] shadow-[0_10px_20px_rgba(111,62,165,0.2)] hover:-translate-y-0.5 hover:bg-[#f6eafa]'
-                : 'bg-[#ece2ef] text-[#9f86b1]/75'
-            }`}
-          >
-            {blogPageData.pagination.prevLabel}
-          </button>
-
-          <button
-            type="button"
-            onClick={handleNextPage}
-            disabled={page >= totalPages || !featuredPost}
-            className={`inline-flex min-w-64 items-center justify-center rounded-2xl px-8 py-4 text-4xl font-black uppercase tracking-[0.06em] transition ${
-              page < totalPages && featuredPost
-                ? 'bg-(--orchird-lavender) text-white shadow-[0_14px_30px_rgba(111,62,165,0.34)] hover:-translate-y-0.5 hover:bg-[#a966cd]'
-                : 'bg-[#d6bfdc] text-white/75'
-            }`}
-          >
-            {blogPageData.pagination.nextLabel}
-          </button>
-
-          <div className="ml-1 flex items-center gap-2">
-            {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
+          {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => {
+            const isActive = pageNumber === page
+            return (
               <button
                 key={pageNumber}
                 type="button"
@@ -267,17 +231,17 @@ function Blog() {
                   setDirection(pageNumber > page ? 1 : -1)
                   setPage(pageNumber)
                 }}
-                className={`inline-flex h-10 w-10 items-center justify-center rounded-full text-sm font-black transition ${
-                  pageNumber === page
-                    ? 'bg-(--orchird-green) text-white'
-                    : 'bg-white text-[#6f3ea5] hover:bg-[#f4e8fb]'
+                className={`inline-flex h-12 w-12 items-center justify-center rounded-full border text-sm font-black transition duration-200 ${
+                  isActive
+                    ? 'border-(--orchird-green) bg-linear-to-br from-(--orchird-green) to-(--orchird-green-dark) text-white shadow-[0_10px_22px_rgba(33,191,72,0.34)]'
+                    : 'border-(--orchird-lilac)/60 bg-white text-[#6f3ea5] hover:-translate-y-0.5 hover:border-(--orchird-lavender) hover:bg-(--orchird-lilac)/25'
                 }`}
                 aria-label={`Ir a pagina ${pageNumber} del blog`}
               >
                 {pageNumber}
               </button>
-            ))}
-          </div>
+            )
+          })}
         </motion.div>
       </section>
     </div>
@@ -285,3 +249,5 @@ function Blog() {
 }
 
 export default Blog
+
+
