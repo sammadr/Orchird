@@ -1,4 +1,4 @@
-﻿export const accountSections = [
+export const accountSections = [
   {
     id: 'reservas',
     title: 'Mis reservas',
@@ -23,7 +23,12 @@
     description: 'Recibe aviso prioritario cuando un producto agotado vuelva a estar disponible.',
     status: 'Proximamente',
   },
-]
+  {
+    id: 'notificaciones',
+    title: 'Notificaciones',
+    description: 'Revisa avisos recientes de compras, reservas y lista de espera.',
+    status: 'Proximamente',
+  },]
 
 export const settingsSections = [
   {
@@ -42,3 +47,4 @@ export const settingsSections = [
     description: 'Preferencias para avisos de reservas, compras y promociones.',
   },
 ]
+
