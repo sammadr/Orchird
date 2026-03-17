@@ -1,10 +1,11 @@
-﻿import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { FaShoppingBag, FaChevronDown, FaMinus, FaPlus, FaTimes, FaTrashAlt, FaUser, FaCog, FaSignOutAlt } from 'react-icons/fa'
 import { HiOutlineMenuAlt3, HiOutlineX } from 'react-icons/hi'
 import { NAV_LINKS } from '../../utils/constants'
 import { getCurrentUserCart, getCurrentUserCartCount, saveCurrentUserCart } from '../../utils/cartStorage'
+import { getCurrentUserNotifications } from '../../utils/notificationsStorage'
 import NavItem from '../molecules/NavItem'
 import avatarFemale from '../../assets/images/avatar/avatar-femele.svg'
 import avatarMale from '../../assets/images/avatar/avatar-male.svg'
@@ -23,6 +24,9 @@ function Navbar() {
   const [isLogged, setIsLogged] = useState(() => getSessionState())
   const [userName, setUserName] = useState(() => getUserName())
   const [userGender, setUserGender] = useState(() => getUserGender())
+  const [unreadNotifications, setUnreadNotifications] = useState(() =>
+    getCurrentUserNotifications().filter((item) => !item.read).length,
+  )
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [mobileUserMenuOpen, setMobileUserMenuOpen] = useState(false)
   const desktopUserMenuRef = useRef(null)
@@ -36,6 +40,7 @@ function Navbar() {
     setIsLogged(getSessionState())
     setUserName(getUserName())
     setUserGender(getUserGender())
+    setUnreadNotifications(getCurrentUserNotifications().filter((item) => !item.read).length)
   }
 
   const cartTotal = cartItems.reduce((sum, item) => sum + Number(item.unitPrice ?? 0) * Number(item.quantity ?? 0), 0)
@@ -44,11 +49,13 @@ function Navbar() {
     window.addEventListener('storage', syncNavbarState)
     window.addEventListener('orchird-cart-updated', syncNavbarState)
     window.addEventListener('orchird-auth-updated', syncNavbarState)
+    window.addEventListener('orchird-notifications-updated', syncNavbarState)
 
     return () => {
       window.removeEventListener('storage', syncNavbarState)
       window.removeEventListener('orchird-cart-updated', syncNavbarState)
       window.removeEventListener('orchird-auth-updated', syncNavbarState)
+      window.removeEventListener('orchird-notifications-updated', syncNavbarState)
     }
   }, [])
 
@@ -301,7 +308,7 @@ function Navbar() {
                 setMobileUserMenuOpen((prev) => !prev)
                 setOpen(false)
               }}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-(--orchird-lilac)/70 bg-white shadow-sm transition hover:-translate-y-0.5 hover:bg-(--orchird-lilac)/22"
+              className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-(--orchird-lilac)/70 bg-white shadow-sm transition hover:-translate-y-0.5 hover:bg-(--orchird-lilac)/22"
               aria-label="Abrir menú de usuario"
             >
               <img
@@ -309,6 +316,11 @@ function Navbar() {
                 alt="Avatar de usuario"
                 className="h-7 w-7 rounded-full border border-(--orchird-lilac)/55 bg-white object-cover"
               />
+              {unreadNotifications > 0 ? (
+                <span className="absolute -right-1.5 -top-1.5 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-(--orchird-green) px-1 text-[10px] font-black leading-none text-white shadow-[0_4px_10px_rgba(33,191,72,0.45)]">
+                  {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                </span>
+              ) : null}
             </button>
 
             <div
@@ -397,7 +409,7 @@ function Navbar() {
               <button
                 type="button"
                 onClick={() => setUserMenuOpen((prev) => !prev)}
-                className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-[#4b2274] shadow-sm transition duration-200 hover:-translate-y-0.5 ${
+                className={`relative inline-flex items-center gap-2 rounded-full border px-3 py-2 text-[#4b2274] shadow-sm transition duration-200 hover:-translate-y-0.5 ${
                   userMenuOpen
                     ? 'border-(--orchird-lavender)/75 bg-[#f8efff] shadow-[0_10px_22px_rgba(69,32,110,0.18)]'
                     : 'border-(--orchird-lilac)/70 bg-white hover:bg-(--orchird-lilac)/24'
@@ -411,6 +423,11 @@ function Navbar() {
                 />
                 <span className="max-w-44 truncate text-xs font-bold">{userName}</span>
                 <FaChevronDown className={`text-xs transition duration-300 ${userMenuOpen ? 'rotate-180 text-(--orchird-green-dark)' : ''}`} />
+                {unreadNotifications > 0 ? (
+                  <span className="absolute -right-1.5 -top-1.5 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-(--orchird-green) px-1 text-[10px] font-black leading-none text-white shadow-[0_4px_10px_rgba(33,191,72,0.45)]">
+                    {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                  </span>
+                ) : null}
               </button>
 
               <div
@@ -430,6 +447,9 @@ function Navbar() {
                     <div className="min-w-0">
                       <p className="truncate text-sm font-black text-[#45206e]">{userName}</p>
                       <p className="text-xs font-semibold text-[#6c5a80]">Cliente Orchid</p>
+                      <p className="fade-up mt-0.5 text-[11px] font-bold text-(--orchird-green-dark)">
+                        Tienes {unreadNotifications} no leídas
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -512,3 +532,13 @@ function Navbar() {
 }
 
 export default Navbar
+
+
+
+
+
+
+
+
+
+
